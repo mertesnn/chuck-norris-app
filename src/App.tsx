@@ -1,19 +1,38 @@
 import { Center, VStack, Text, Button, Select, HStack } from '@chakra-ui/react'
-import axios from 'axios'
 import { useEffect, useState } from 'react'
 import bg from './Images/bg.webp'
+import { getRandomJoke } from './Utils/services'
+import useFetch from './Utils/useFetch'
 
 const App = () => {
-    const [joke, setJoke] = useState<joke | null>(null)
+    const [jokes, setJokes] = useState<joke | undefined>(undefined)
+    const [categories, setCategories] = useState<categories | undefined>(
+        undefined
+    )
 
-    const handleClick = async () => {
-        const data = await axios.get('https://api.chucknorris.io/jokes/random')
-        setJoke(data?.data)
-    }
+    const firstJoke: joke | undefined = useFetch(
+        'https://api.chucknorris.io/jokes/random'
+    )
+    const allCategories: categories | undefined = useFetch(
+        'https://api.chucknorris.io/jokes/categories'
+    )
 
     useEffect(() => {
-        console.log(joke?.value)
-    }, [joke])
+        if (firstJoke) {
+            setJokes(firstJoke)
+        }
+    }, [firstJoke])
+
+    useEffect(() => {
+        if (allCategories) {
+            setCategories(allCategories)
+        }
+    }, [allCategories])
+
+    const handleClick = async () => {
+        const data: joke | undefined = await getRandomJoke('')
+        setJokes(data)
+    }
 
     return (
         <>
@@ -28,12 +47,16 @@ const App = () => {
             >
                 <VStack w={{ lg: '60%', md: '65%', sm: '80%' }} gap="40px">
                     <Text fontSize="3xl" align="center">
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                        Deserunt, recusandae!
+                        {jokes?.value}
                     </Text>
                     <HStack gap="30px">
-                        <Select w="100%">
+                        <Select w="100%" color="orange" borderColor="orange">
                             <option value="0">Choose Category</option>
+                            {categories?.map((item, index) => (
+                                <option key={index} value={item}>
+                                    {item}
+                                </option>
+                            ))}
                         </Select>
                         <Button
                             onClick={handleClick}
