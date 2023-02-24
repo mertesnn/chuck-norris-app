@@ -1,10 +1,14 @@
 import { Center, VStack, Text, Button, Select, HStack } from '@chakra-ui/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import bg from './Images/bg.webp'
 import { getRandomJoke } from './Utils/services'
 import useFetch from './Utils/useFetch'
 
 const App = () => {
+    const selectedCategory = useRef<HTMLSelectElement>(null)
+    const [buttonText, setButtonText] = useState<string | undefined>(
+        'Random Joke'
+    )
     const [jokes, setJokes] = useState<joke | undefined>(undefined)
     const [categories, setCategories] = useState<categories | undefined>(
         undefined
@@ -30,8 +34,22 @@ const App = () => {
     }, [allCategories])
 
     const handleClick = async () => {
-        const data: joke | undefined = await getRandomJoke('')
+        const category =
+            selectedCategory?.current?.value !== '0'
+                ? selectedCategory?.current?.value
+                : ''
+        const data: joke | undefined = await getRandomJoke(category)
         setJokes(data)
+    }
+
+    const handleSelect = () => {
+        setButtonText(
+            `Random ${
+                selectedCategory?.current?.value !== '0'
+                    ? selectedCategory?.current?.value
+                    : ''
+            } Joke`
+        )
     }
 
     return (
@@ -50,7 +68,14 @@ const App = () => {
                         {jokes?.value}
                     </Text>
                     <HStack gap="30px">
-                        <Select w="100%" color="orange" borderColor="orange">
+                        <Select
+                            w="100%"
+                            color="orange"
+                            borderColor="orange"
+                            ref={selectedCategory}
+                            onChange={handleSelect}
+                            textTransform="capitalize"
+                        >
                             <option value="0">Choose Category</option>
                             {categories?.map((item, index) => (
                                 <option key={index} value={item}>
@@ -62,8 +87,9 @@ const App = () => {
                             onClick={handleClick}
                             colorScheme="orange"
                             px="35px"
+                            textTransform="capitalize"
                         >
-                            Random Joke
+                            {buttonText}
                         </Button>
                     </HStack>
                 </VStack>
